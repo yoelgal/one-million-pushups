@@ -16,6 +16,10 @@ const handler = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
+  pages: {
+    error: "/auth/error",
+    signIn: "/",
+  },
   callbacks: {
     async signIn({ user }) {
       if (!user.email) return false;
