@@ -1,18 +1,18 @@
 import { createClient } from "@supabase/supabase-js";
-import { UUID } from "crypto";
 
 export type Post = {
-  id: UUID;
+  id: string;
   created_at: Date;
-  user_id: UUID;
+  user_id: string;
   caption: string;
   pushup_count: number;
 };
 
 export type User = {
-  id: UUID;
-  email: string;
+  id: string;
   name: string;
+  username: string;
+  password: string;
 };
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

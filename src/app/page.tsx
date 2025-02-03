@@ -1,18 +1,17 @@
 "use client";
 
-import SignInButton from "@/components/SignInButton";
 import { getTotalPushups } from "@/lib/kv";
-import { Post, supabase } from "@/lib/supabase";
+import { Post, User, supabase } from "@/lib/supabase";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 
 export default function Home() {
-  const { data: session } = useSession();
+  const [user] = useState<User | null>(null);
   const [totalPushups, setTotalPushups] = useState<number>(0);
   const [newPost, setNewPost] = useState("");
   const [pushupCount, setPushupCount] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { ref, inView } = useInView();
 
   const fetchPosts = async ({ pageParam = 0 }) => {
@@ -51,25 +50,17 @@ export default function Home() {
     fetchTotalPushups();
   }, []);
 
-  if (!session) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <h1 className="text-4xl font-bold mb-8">One Million Pushups</h1>
-        <SignInButton />
-      </div>
-    );
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!session?.user) return;
+    if (!user) return;
 
     const count = parseInt(pushupCount);
     if (isNaN(count) || count <= 0) return;
 
     const { error } = await supabase.from("posts").insert({
-      user_id: session.user.id,
-      content: newPost,
+      id: crypto.randomUUID(),
+      user_id: user.id,
+      caption: newPost,
       pushup_count: count,
     });
 
@@ -80,7 +71,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-900 text-white p-4">
+    <main className="min-h-screen bg-gray-900 text-white p-4 relative">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2">One Million Pushups</h1>
@@ -89,38 +80,62 @@ export default function Home() {
           </p>
         </div>
 
-        {session?.user ? (
-          <form onSubmit={handleSubmit} className="mb-8">
-            <div className="flex flex-col gap-4 bg-gray-800 p-4 rounded-lg">
-              <textarea
-                value={newPost}
-                onChange={(e) => setNewPost(e.target.value)}
-                placeholder="Share your pushup achievement..."
-                className="w-full p-2 rounded bg-gray-700 text-white"
-                rows={3}
-              />
-              <input
-                type="number"
-                value={pushupCount}
-                onChange={(e) => setPushupCount(e.target.value)}
-                placeholder="Number of pushups"
-                className="w-full p-2 rounded bg-gray-700 text-white"
-              />
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
-                Post
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className="text-center mb-8 p-4 bg-gray-800 rounded-lg">
-            <p>Please sign in to post your pushup achievements</p>
-          </div>
-        )}
-
         <div className="space-y-4">
+          {/* Modal Overlay */}
+          {isModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-40 flex items-center justify-center p-4">
+              <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md relative">
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                >
+                  ✕
+                </button>
+                {user ? (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <textarea
+                      value={newPost}
+                      onChange={(e) => setNewPost(e.target.value)}
+                      placeholder="Share your pushup achievement..."
+                      className="w-full p-2 rounded bg-gray-700 text-white"
+                      rows={3}
+                    />
+                    <input
+                      type="number"
+                      value={pushupCount}
+                      onChange={(e) => setPushupCount(e.target.value)}
+                      placeholder="Number of pushups"
+                      className="w-full p-2 rounded bg-gray-700 text-white"
+                    />
+                    <button
+                      type="submit"
+                      className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    >
+                      Post
+                    </button>
+                  </form>
+                ) : (
+                  <div className="text-center">
+                    <p className="text-gray-400 mb-4">Please sign in to post</p>
+                    <button
+                      onClick={() => {}}
+                      className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+                    >
+                      Sign In
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Floating Action Button */}
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="fixed bottom-8 right-8 bg-blue-600 text-white w-14 h-14 rounded-full flex items-center justify-center text-2xl shadow-lg hover:bg-blue-700 z-30"
+          >
+            +
+          </button>
           {data?.pages.map((group, i) => (
             <div key={i} className="space-y-4">
               {group.map((post: Post) => (
