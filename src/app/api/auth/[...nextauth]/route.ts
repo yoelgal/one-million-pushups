@@ -2,6 +2,12 @@ import { supabase } from "@/lib/supabase";
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
+if (!process.env.NEXTAUTH_SECRET) {
+  throw new Error(
+    "Please set NEXTAUTH_SECRET environment variable. You can generate one with: `openssl rand -base64 32`"
+  );
+}
+
 const handler = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
