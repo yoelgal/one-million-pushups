@@ -19,10 +19,16 @@ const handler = NextAuth({
   pages: {
     error: "/auth/error",
     signIn: "/",
+    signOut: "/",
   },
   callbacks: {
-    async signIn({ user }) {
-      if (!user.email) return false;
+    async signIn({ user, account, profile }) {
+      console.log("Sign-in attempt:", { user, account, profile });
+
+      if (!user.email) {
+        console.log("Sign-in failed: No email provided");
+        return false;
+      }
 
       const { error } = await supabase
         .from("users")
@@ -38,6 +44,7 @@ const handler = NextAuth({
         return false;
       }
 
+      console.log("Sign-in successful for user:", user.email);
       return true;
     },
     async session({ session, user }) {
