@@ -1,5 +1,6 @@
 "use client";
 
+import Auth from "@/components/Auth";
 import { getTotalPushups } from "@/lib/kv";
 import { Post, User, supabase } from "@/lib/supabase";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -7,7 +8,28 @@ import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 
 export default function Home() {
-  const [user] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        const { data: userData } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", session.user.id)
+          .single();
+        setUser(userData as User);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
   const [totalPushups, setTotalPushups] = useState<number>(0);
   const [newPost, setNewPost] = useState("");
   const [pushupCount, setPushupCount] = useState("");
@@ -116,13 +138,7 @@ export default function Home() {
                   </form>
                 ) : (
                   <div className="text-center">
-                    <p className="text-gray-400 mb-4">Please sign in to post</p>
-                    <button
-                      onClick={() => {}}
-                      className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-                    >
-                      Sign In
-                    </button>
+                    <Auth onAuthStateChange={setUser} />
                   </div>
                 )}
               </div>
