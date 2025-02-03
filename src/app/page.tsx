@@ -11,6 +11,8 @@ import { useInView } from "react-intersection-observer";
 export default function Home() {
   const { data: session } = useSession();
   const [totalPushups, setTotalPushups] = useState<number>(0);
+  const [newPost, setNewPost] = useState("");
+  const [pushupCount, setPushupCount] = useState("");
   const { ref, inView } = useInView();
 
   const fetchPosts = async ({ pageParam = 0 }) => {
@@ -57,9 +59,6 @@ export default function Home() {
       </div>
     );
   }
-
-  const [newPost, setNewPost] = useState("");
-  const [pushupCount, setPushupCount] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
