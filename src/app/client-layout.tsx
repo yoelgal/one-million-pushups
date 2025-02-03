@@ -1,7 +1,6 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { SessionProvider } from "next-auth/react";
 
 const queryClient = new QueryClient();
 
@@ -14,7 +13,7 @@ export default function ClientLayout({
     <html lang="en">
       <body>
         <QueryClientProvider client={queryClient}>
-          <SessionProvider>{children}</SessionProvider>
+          {children}
         </QueryClientProvider>
       </body>
     </html>
