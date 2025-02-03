@@ -3,9 +3,23 @@
 import { signIn } from "next-auth/react";
 
 export default function SignInButton() {
+  const handleSignIn = async () => {
+    try {
+      console.log("Initiating Google sign-in...");
+      const result = await signIn("google", { redirect: false });
+      console.log("Sign-in result:", result);
+
+      if (result?.error) {
+        console.error("Sign-in error:", result.error);
+      }
+    } catch (error) {
+      console.error("Unexpected error during sign-in:", error);
+    }
+  };
+
   return (
     <button
-      onClick={() => signIn("google")}
+      onClick={handleSignIn}
       className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center gap-2"
     >
       <svg

@@ -23,10 +23,13 @@ const handler = NextAuth({
   },
   callbacks: {
     async signIn({ user, account, profile }) {
-      console.log("Sign-in attempt:", { user, account, profile });
+      console.log("=== Sign-in Process Started ===");
+      console.log("User:", JSON.stringify(user, null, 2));
+      console.log("Account:", JSON.stringify(account, null, 2));
+      console.log("Profile:", JSON.stringify(profile, null, 2));
 
       if (!user.email) {
-        console.log("Sign-in failed: No email provided");
+        console.error("[Auth Error] Sign-in failed: No email provided");
         return false;
       }
 
@@ -40,11 +43,15 @@ const handler = NextAuth({
         .select();
 
       if (error) {
-        console.error("Error saving user to Supabase:", error);
+        console.error(
+          "[Database Error] Failed to save user to Supabase:",
+          error
+        );
         return false;
       }
 
-      console.log("Sign-in successful for user:", user.email);
+      console.log("=== Sign-in Success ===");
+      console.log("User saved to database:", user.email);
       return true;
     },
     async session({ session, user }) {
